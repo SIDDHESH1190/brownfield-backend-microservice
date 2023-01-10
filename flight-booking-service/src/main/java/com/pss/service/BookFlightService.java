@@ -26,13 +26,16 @@ public class BookFlightService {
 				newBooking.getDateOfTravelling());
 
 		// assign next available seat to passenger
+		int i = 1;
 		for (Passenger passenger : newBooking.getPassengerInfo()) {
 			if (passenger.getSeatNo() == null) {
-				for (int i = 1; i < 101; i++) {
+				while(i < 101) {
 					if (!bookedSeats.contains(i)) {
 						passenger.setSeatNo(i);
+						bookedSeats.add(i);
 						break;
 					}
+					i++;
 				}
 			} else {
 				if (bookedSeats.contains(passenger.getSeatNo())) {

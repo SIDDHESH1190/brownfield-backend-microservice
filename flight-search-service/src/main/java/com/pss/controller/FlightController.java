@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pss.entity.Airport;
+import com.pss.entity.AddFlightRequest;
+import com.pss.entity.AdminSearchRequest;
 import com.pss.entity.Flight;
 import com.pss.entity.SearchRequest;
+import com.pss.entity.SearchResponse;
 import com.pss.service.FlightService;
 
 import jakarta.validation.Valid;
@@ -31,8 +33,8 @@ public class FlightController {
 
 	// Admin can add flight
 	@PostMapping("/addFlight")
-	public Flight addFlight(@RequestBody @Valid Flight newFlight) {
-		return flightService.addFlight(newFlight);
+	public Flight addFlight(@RequestBody @Valid AddFlightRequest newFlightRequest) {
+		return flightService.addFlight(newFlightRequest);
 	}
 
 	// Admin remove flight
@@ -60,33 +62,45 @@ public class FlightController {
 	}
 
 	// To get flight by source and destination city
-	@GetMapping("/search")
-	public List<Flight> searchFlight(@RequestBody Map<String, Airport> airports) {
+	@PostMapping("/search")
+	public List<Flight> searchFlight(@RequestBody Map<String, String> airports) {
 		return flightService.getFlightBySourceAndDestination(airports.get("source"), airports.get("destination"));
 	}
 
 	// To get flight by source, destination, date and no. of passenger
-	@GetMapping("/search1")
-	public List<Flight> searchFlight(@RequestBody @Valid SearchRequest searchRequest) {
+	@PostMapping("/userSearch")
+	public List<SearchResponse> searchFlight(@RequestBody @Valid SearchRequest searchRequest) {
 		return flightService.searchFlight(searchRequest);
 	}
 
 	// To get flight which runs in morning
 	@GetMapping("/morningFlights")
 	public List<Flight> morningFlights() {
-		return flightService.getMorningFlights();
+		return flightService.getMorningFlights(null);
 	}
 
 	// To get flight which runs in afternoon
 	@GetMapping("/afternoonFlights")
 	public List<Flight> afternoonFlights() {
-		return flightService.getAfternoonFlights();
+		return flightService.getAfternoonFlights(null);
 	}
 
 	// To get flight which runs in night
 	@GetMapping("/nightFlights")
 	public List<Flight> nightFlights() {
-		return flightService.getNightFlights();
+		return flightService.getNightFlights(null);
+	}
+
+	// Admin Search
+	@PostMapping("/adminSearch")
+	public List<Flight> adminSearch(@RequestBody AdminSearchRequest adminSearchRequest) {
+		return flightService.adminSearch(adminSearchRequest);
+	}
+
+	// Get Distance for flight
+	@GetMapping("/getDistance/{flightId}")
+	public Double getDistance(@PathVariable("flightId") Long flightId) {
+		return flightService.getFlightById(flightId).get().getDistance();
 	}
 
 }

@@ -5,14 +5,17 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public class SearchRequest {
 
 	@NotNull(message = "Source airport is required.")
-	private Airport source;
+	@Pattern(regexp = "^[A-Z]{3}$", message = "Airport code should be 3 characters long and should have only captial letters")
+	private String source;
 
 	@NotNull(message = "Destination airport is required.")
-	private Airport destination;
+	@Pattern(regexp = "^[A-Z]{3}$", message = "Airport code should be 3 characters long and should have only captial letters")
+	private String destination;
 
 	private LocalDate dateOfTravelling;
 
@@ -25,7 +28,7 @@ public class SearchRequest {
 		super();
 	}
 
-	public SearchRequest(Airport source, Airport destination, LocalDate dateOfTravelling, Integer noOfPassenger) {
+	public SearchRequest(String source, String destination, LocalDate dateOfTravelling, Integer noOfPassenger) {
 		super();
 		this.source = source;
 		this.destination = destination;
@@ -33,19 +36,19 @@ public class SearchRequest {
 		this.noOfPassenger = noOfPassenger;
 	}
 
-	public Airport getSource() {
+	public String getSource() {
 		return source;
 	}
 
-	public void setSource(Airport source) {
+	public void setSource(String source) {
 		this.source = source;
 	}
 
-	public Airport getDestination() {
+	public String getDestination() {
 		return destination;
 	}
 
-	public void setDestination(Airport destination) {
+	public void setDestination(String destination) {
 		this.destination = destination;
 	}
 

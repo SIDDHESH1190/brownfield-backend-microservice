@@ -2,6 +2,7 @@ package com.pss.service;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.pss.entity.Airport;
+import com.pss.entity.AddFlightRequest;
+import com.pss.entity.AdminSearchRequest;
 import com.pss.entity.Flight;
 import com.pss.entity.SearchRequest;
+import com.pss.entity.SearchResponse;
 import com.pss.repo.FlightRepo;
 
 @Service
@@ -46,24 +49,32 @@ public class FlightService {
 	private FlightRepo flightRepo;
 
 	@Autowired
-	RestTemplate restTemplate;
+	private AirportService airportService;
 
-//	@Autowired
-//	private BookFlightRepo bookFlightRepo;
+	@Autowired
+	RestTemplate restTemplate;
 
 	// Admin Service
 	// Add Flight
-	public Flight addFlight(Flight newFlight) {
+	public Flight addFlight(AddFlightRequest newFlightRequest) {
+
+		Flight newFlight = new Flight();
+
+		newFlight.setFlightId(0L);
+
+		newFlight.setSource(airportService.getAirportByCode(newFlightRequest.getSourceCode()).get());
+
+		newFlight.setDestination(airportService.getAirportByCode(newFlightRequest.getDestinationCode()).get());
 
 		// Calculate the distance between two airports
 		newFlight.setDistance(distance(newFlight.getSource().getLat(), newFlight.getDestination().getLat(),
 				newFlight.getSource().getLon(), newFlight.getDestination().getLon()));
 
 		// Set DepartureTime
-		newFlight.setDepartureTime(LocalTime.parse(newFlight.getTimeOfDeparture(), DateTimeFormatter.ISO_TIME));
+		newFlight.setDepartureTime(LocalTime.parse(newFlightRequest.getTimeOfDeparture(), DateTimeFormatter.ISO_TIME));
 
 		// Set ArrivalTime
-		newFlight.setArrivalTime(LocalTime.parse(newFlight.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
+		newFlight.setArrivalTime(LocalTime.parse(newFlightRequest.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
 
 		return flightRepo.saveAndFlush(newFlight);
 	}
@@ -107,46 +118,57 @@ public class FlightService {
 				updatedFlight.getSource().getLon(), updatedFlight.getDestination().getLon()));
 
 		// Set DepartureTime
-		updatedFlight.setDepartureTime(LocalTime.parse(updatedFlight.getTimeOfDeparture(), DateTimeFormatter.ISO_TIME));
+//		updatedFlight.setDepartureTime(LocalTime.parse(updatedFlight.getTimeOfDeparture(), DateTimeFormatter.ISO_TIME));
 
 		// Set ArrivalTime
-		updatedFlight.setArrivalTime(LocalTime.parse(updatedFlight.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
+//		updatedFlight.setArrivalTime(LocalTime.parse(updatedFlight.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
 
 		return flightRepo.saveAndFlush(updatedFlight);
 
 	}
 
 	// Get flight which depart in morning
-	public List<Flight> getMorningFlights() {
-		return flightRepo.findAll().stream().filter(flight -> flight.getDepartureTime().isBefore(LocalTime.NOON))
-				.toList();
+	public List<Flight> getMorningFlights(List<Flight> flights) {
+		if (flights == null) {
+			flights = flightRepo.findAll();
+		}
+		return flights.stream().filter(flight -> flight.getDepartureTime().isBefore(LocalTime.NOON)).toList();
 
 	}
 
 	// Get flight which depart in afternoon
-	public List<Flight> getAfternoonFlights() {
+	public List<Flight> getAfternoonFlights(List<Flight> flights) {
 
-		return flightRepo.findAll().stream().filter(flight -> flight.getDepartureTime().isAfter(LocalTime.NOON)
+		if (flights == null) {
+			flights = flightRepo.findAll();
+		}
+
+		return flights.stream().filter(flight -> flight.getDepartureTime().isAfter(LocalTime.NOON)
 				&& flight.getDepartureTime().isBefore(LocalTime.of(18, 00))).toList();
 	}
 
 	// Get flight which depart in night
-	public List<Flight> getNightFlights() {
+	public List<Flight> getNightFlights(List<Flight> flights) {
 
-		return flightRepo.findAll().stream().filter(flight -> flight.getDepartureTime().isAfter(LocalTime.of(18, 00))
+		if (flights == null) {
+			flights = flightRepo.findAll();
+		}
+
+		return flights.stream().filter(flight -> flight.getDepartureTime().isAfter(LocalTime.of(18, 00))
 				&& flight.getDepartureTime().isBefore(LocalTime.of(23, 59, 59))).toList();
 	}
 
 	// Get flight based on source and destination
-	public List<Flight> getFlightBySourceAndDestination(Airport source, Airport destination) {
+	public List<Flight> getFlightBySourceAndDestination(String source, String destination) {
 		return flightRepo.findBySourceAndDestination(source, destination);
 	}
 
 	// Get flight by source, destination, date and no. of passenger
-	public List<Flight> searchFlight(SearchRequest searchRequest) {
+	public List<SearchResponse> searchFlight(SearchRequest searchRequest) {
 
 		return flightRepo.findBySourceAndDestination(searchRequest.getSource(), searchRequest.getDestination()).stream()
 				.filter((flight) -> {
+
 					Integer passengerCount = restTemplate.getForEntity("http://booking-service/getPassengerCount/"
 							+ flight.getFlightId() + "/" + searchRequest.getDateOfTravelling(), Integer.class)
 							.getBody();
@@ -155,8 +177,53 @@ public class FlightService {
 						passengerCount = 0;
 					}
 					return passengerCount + searchRequest.getNoOfPassenger() <= 100;
+
+				}).map((flight) -> {
+
+					Integer fare = restTemplate.getForEntity("http://fare-service/getFare/" + flight.getFlightId() + "/"
+							+ searchRequest.getDateOfTravelling(), Integer.class).getBody();
+
+					return new SearchResponse(flight, fare);
+
 				}).toList();
 
 	}
 
+	// Admin Search
+	public List<Flight> adminSearch(AdminSearchRequest req) {
+		if (req.getFlightId() != null) {
+			List<Flight> flights = new ArrayList<Flight>();
+			flights.add(getFlightById(req.getFlightId()).get());
+			return flights;
+		}
+
+		if (req.getSource() != "" && req.getDestination() != "") {
+			List<Flight> flights = getFlightBySourceAndDestination(req.getSource(), req.getDestination());
+			if (req.getTime() != "") {
+
+				if (req.getTime() == "Morning") {
+					return getMorningFlights(flights);
+				} else if (req.getTime() == "Afternoon") {
+					return getAfternoonFlights(flights);
+				} else {
+					return getNightFlights(flights);
+				}
+			} else {
+				return flights;
+			}
+		}
+
+		if (req.getTime() == "Morning") {
+			return getMorningFlights(null);
+		}
+
+		if (req.getTime() == "Afternoon") {
+			return getAfternoonFlights(null);
+		}
+
+		if (req.getTime() == "Night")
+			return getNightFlights(null);
+
+		return getAllFlight();
+	}
 }
