@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pss.entity.AdminBookingSearchRequest;
 import com.pss.entity.BookFlight;
 import com.pss.service.BookFlightService;
 
@@ -67,9 +68,9 @@ public class FlightBookingController {
 	}
 
 	// To get all booked flights between two cities on given date
-	@GetMapping("/getBookedFlights")
-	public List<BookFlight> getBookedFlights(@RequestBody Map<String, String> request) {
-		return bookFlightService.getBookedFlights(request.get("source"), request.get("destination"),
+	@GetMapping("/getBookings")
+	public Collection<BookFlight> getBooking(@RequestBody Map<String, String> request) {
+		return bookFlightService.getBooking(request.get("source"), request.get("destination"),
 				LocalDate.parse(request.get("date")));
 	}
 
@@ -79,4 +80,9 @@ public class FlightBookingController {
 		return bookFlightService.getPassengerCount(flightId, date);
 	}
 
+	// Admin Booking search
+	@PostMapping("/adminBookingSearch")
+	public Collection<BookFlight> adminBookingSearch(@RequestBody AdminBookingSearchRequest request) {
+		return bookFlightService.adminSearch(request);
+	}
 }

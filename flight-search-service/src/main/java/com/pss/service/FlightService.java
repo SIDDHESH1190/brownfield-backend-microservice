@@ -1,9 +1,12 @@
 package com.pss.service;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +79,9 @@ public class FlightService {
 		// Set ArrivalTime
 		newFlight.setArrivalTime(LocalTime.parse(newFlightRequest.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
 
+		newFlight.setFlightStatus(true);
+		;
+
 		return flightRepo.saveAndFlush(newFlight);
 	}
 
@@ -132,6 +138,8 @@ public class FlightService {
 		// Set ArrivalTime
 		flightToUpdate.setArrivalTime(LocalTime.parse(updatedFlight.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
 
+		flightToUpdate.setFlightStatus(updatedFlight.getFlightStatus());
+
 		return flightRepo.saveAndFlush(flightToUpdate);
 
 	}
@@ -174,28 +182,47 @@ public class FlightService {
 	}
 
 	// Get flight by source, destination, date and no. of passenger
-	public List<SearchResponse> searchFlight(SearchRequest searchRequest) {
+	public List<SearchResponse> getFlightsForUser(String source, String destination, LocalDate date,
+			Integer noOfPassenger) {
+		return flightRepo.findBySourceAndDestination(source, destination).stream().filter((flight) -> {
 
-		return flightRepo.findBySourceAndDestination(searchRequest.getSource(), searchRequest.getDestination()).stream()
-				.filter((flight) -> {
+			Integer passengerCount = restTemplate
+					.getForEntity("http://booking-service/getPassengerCount/" + flight.getFlightId() + "/" + date,
+							Integer.class)
+					.getBody();
 
-					Integer passengerCount = restTemplate.getForEntity("http://booking-service/getPassengerCount/"
-							+ flight.getFlightId() + "/" + searchRequest.getDateOfTravelling(), Integer.class)
-							.getBody();
+			if (passengerCount == null) {
+				passengerCount = 0;
+			}
+			return (passengerCount + noOfPassenger <= 100) && flight.getFlightStatus();
 
-					if (passengerCount == null) {
-						passengerCount = 0;
-					}
-					return passengerCount + searchRequest.getNoOfPassenger() <= 100;
+		}).map((flight) -> {
 
-				}).map((flight) -> {
+			Integer fare = restTemplate
+					.getForEntity("http://fare-service/getFare/" + flight.getFlightId() + "/" + date, Integer.class)
+					.getBody();
 
-					Integer fare = restTemplate.getForEntity("http://fare-service/getFare/" + flight.getFlightId() + "/"
-							+ searchRequest.getDateOfTravelling(), Integer.class).getBody();
+			return new SearchResponse(flight, fare);
 
-					return new SearchResponse(flight, fare);
+		}).toList();
+	}
 
-				}).toList();
+	// user search
+	public Map<String, List<SearchResponse>> searchFlight(SearchRequest searchRequest) {
+
+		Map<String, List<SearchResponse>> searchResult = new HashMap<String, List<SearchResponse>>();
+
+		searchResult.put("flights", getFlightsForUser(searchRequest.getSource(), searchRequest.getDestination(),
+				searchRequest.getDateOfTravelling(), searchRequest.getNoOfPassenger()));
+
+		if (searchRequest.getDateOfReturn() != null) {
+			searchResult.put("returnFlights", getFlightsForUser(searchRequest.getDestination(),
+					searchRequest.getSource(), searchRequest.getDateOfReturn(), searchRequest.getNoOfPassenger()));
+		} else {
+			searchResult.put("returnFlights", null);
+		}
+
+		return searchResult;
 
 	}
 
@@ -241,5 +268,20 @@ public class FlightService {
 		}
 
 		return getAllFlight();
+	}
+
+	// Admin can change flight status
+	public String changeFlightStatus(Long flightId) {
+		if (!flightRepo.existsById(flightId)) {
+			throw new RuntimeException("Flight with flight Id : " + flightId + " is not found.");
+		}
+
+		Flight flight = flightRepo.findById(flightId).get();
+		flight.setFlightStatus(!flight.getFlightStatus());
+		flightRepo.saveAndFlush(flight);
+		if (!flight.getFlightStatus())
+			return "Flight is now Enable";
+
+		return "Flight is now Disable";
 	}
 }

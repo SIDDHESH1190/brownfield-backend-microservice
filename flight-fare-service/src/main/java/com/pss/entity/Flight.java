@@ -2,6 +2,7 @@ package com.pss.entity;
 
 import java.time.LocalTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -35,12 +36,19 @@ public class Flight {
 	@NotNull(message = "Flight arrival time is required")
 	private LocalTime arrivalTime;
 
+	@Column(name = "flight_status")
+	private Boolean FlightStatus;
+
 	public Flight() {
 		super();
 	}
 
-	public Flight(Long flightId, Airport source, Airport destination, Double distance, String timeOfDeparture,
-			String timeOfArrival, LocalTime departureTime, LocalTime arrivalTime) {
+	public Flight(@NotNull(message = "Flight ID is required") Long flightId,
+			@NotNull(message = "Flight source airport is required") Airport source,
+			@NotNull(message = "Flight destination airport is required") Airport destination,
+			@NotNull(message = "Flight distance is required") Double distance,
+			@NotNull(message = "Flight departure time is required") LocalTime departureTime,
+			@NotNull(message = "Flight arrival time is required") LocalTime arrivalTime, Boolean flightStatus) {
 		super();
 		this.flightId = flightId;
 		this.source = source;
@@ -48,6 +56,7 @@ public class Flight {
 		this.distance = distance;
 		this.departureTime = departureTime;
 		this.arrivalTime = arrivalTime;
+		FlightStatus = flightStatus;
 	}
 
 	public Long getFlightId() {
@@ -65,8 +74,6 @@ public class Flight {
 	public Double getDistance() {
 		return distance;
 	}
-
-	
 
 	public LocalTime getDepartureTime() {
 		return departureTime;
@@ -92,8 +99,6 @@ public class Flight {
 		this.distance = distance;
 	}
 
-	
-
 	public void setDepartureTime(LocalTime departureTime) {
 		this.departureTime = departureTime;
 	}
@@ -102,12 +107,19 @@ public class Flight {
 		this.arrivalTime = arrivalTime;
 	}
 
+	public Boolean getFlightStatus() {
+		return FlightStatus;
+	}
+
+	public void setFlightStatus(Boolean flightStatus) {
+		FlightStatus = flightStatus;
+	}
+
 	@Override
 	public String toString() {
 		return "Flight [flightId=" + flightId + ", source=" + source + ", destination=" + destination + ", distance="
-				+ distance + ", departureTime=" + departureTime + ", arrivalTime=" + arrivalTime + "]";
+				+ distance + ", departureTime=" + departureTime + ", arrivalTime=" + arrivalTime + ", FlightStatus="
+				+ FlightStatus + "]";
 	}
-
-	
 
 }

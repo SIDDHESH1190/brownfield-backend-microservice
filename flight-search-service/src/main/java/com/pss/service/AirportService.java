@@ -66,7 +66,7 @@ public class AirportService {
 	// Admin Service
 	// Get all airports
 	public List<Airport> getAllAirports() {
-		return airportRepo.findAll();
+		return airportRepo.findAllByOrderByCodeAsc();
 	}
 
 }

@@ -120,4 +120,10 @@ public class Airport {
 		this.elev = elev;
 	}
 
+	@Override
+	public String toString() {
+		return "Airport [code=" + code + ", name=" + name + ", city=" + city + ", state=" + state + ", country="
+				+ country + ", lat=" + lat + ", lon=" + lon + ", elev=" + elev + "]";
+	}
+
 }

@@ -19,6 +19,8 @@ public class SearchRequest {
 
 	private LocalDate dateOfTravelling;
 
+	private LocalDate dateOfReturn;
+
 	@NotNull(message = "Passenger is required.")
 	@Min(value = 1, message = "Minimum 1 passenger is required.")
 	@Max(value = 10, message = "Maximum 10 passenger is allowed.")
@@ -28,11 +30,16 @@ public class SearchRequest {
 		super();
 	}
 
-	public SearchRequest(String source, String destination, LocalDate dateOfTravelling, Integer noOfPassenger) {
+	public SearchRequest(
+			@NotNull(message = "Source airport is required.") @Pattern(regexp = "^[A-Z]{3}$", message = "Airport code should be 3 characters long and should have only captial letters") String source,
+			@NotNull(message = "Destination airport is required.") @Pattern(regexp = "^[A-Z]{3}$", message = "Airport code should be 3 characters long and should have only captial letters") String destination,
+			LocalDate dateOfTravelling, LocalDate dateOfReturn,
+			@NotNull(message = "Passenger is required.") @Min(value = 1, message = "Minimum 1 passenger is required.") @Max(value = 10, message = "Maximum 10 passenger is allowed.") Integer noOfPassenger) {
 		super();
 		this.source = source;
 		this.destination = destination;
 		this.dateOfTravelling = dateOfTravelling;
+		this.dateOfReturn = dateOfReturn;
 		this.noOfPassenger = noOfPassenger;
 	}
 
@@ -68,10 +75,18 @@ public class SearchRequest {
 		this.noOfPassenger = noOfPassenger;
 	}
 
+	public LocalDate getDateOfReturn() {
+		return dateOfReturn;
+	}
+
+	public void setDateOfReturn(LocalDate dateOfReturn) {
+		this.dateOfReturn = dateOfReturn;
+	}
+
 	@Override
 	public String toString() {
 		return "SearchRequest [source=" + source + ", destination=" + destination + ", dateOfTravelling="
-				+ dateOfTravelling + ", noOfPassenger=" + noOfPassenger + "]";
+				+ dateOfTravelling + ", dateOfReturn=" + dateOfReturn + ", noOfPassenger=" + noOfPassenger + "]";
 	}
 
 }

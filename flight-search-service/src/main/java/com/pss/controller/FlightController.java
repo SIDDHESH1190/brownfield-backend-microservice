@@ -69,7 +69,7 @@ public class FlightController {
 
 	// To get flight by source, destination, date and no. of passenger
 	@PostMapping("/userSearch")
-	public List<SearchResponse> searchFlight(@RequestBody @Valid SearchRequest searchRequest) {
+	public Map<String, List<SearchResponse>> searchFlight(@RequestBody @Valid SearchRequest searchRequest) {
 		return flightService.searchFlight(searchRequest);
 	}
 
@@ -101,6 +101,12 @@ public class FlightController {
 	@GetMapping("/getDistance/{flightId}")
 	public Double getDistance(@PathVariable("flightId") Long flightId) {
 		return flightService.getFlightById(flightId).get().getDistance();
+	}
+
+	// Admin can change status of flight
+	@GetMapping("changeFlightStatus/{flightId}")
+	public String changeFlightStatus(@PathVariable("flightId") Long flightId) {
+		return flightService.changeFlightStatus(flightId);
 	}
 
 }

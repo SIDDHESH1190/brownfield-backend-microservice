@@ -13,7 +13,7 @@ import com.pss.entity.BookFlight;
 @Repository
 public interface BookFlightRepo extends JpaRepository<BookFlight, Long> {
 
-	// get booked flights for data
+	// get bookings on given date
 	@Query("SELECT b FROM BookFlight b WHERE b.dateOfTravelling = ?1")
 	public List<BookFlight> getBookingByDate(LocalDate date);
 
@@ -25,8 +25,12 @@ public interface BookFlightRepo extends JpaRepository<BookFlight, Long> {
 	@Query(value = "select p.seat_no from book_flight join book_flight_passenger_info on book_flight_booking_id = booking_id join passenger p on passenger_info_passenger_id = passenger_id where flight_flight_id = ?1 and date_of_travelling = ?2", nativeQuery = true)
 	public Collection<Integer> getBookedSeat(Long flightId, LocalDate date);
 
-	// Get booked flights between two cities on given date
+	// Get booking between two cities on given date
 	@Query(value = "SELECT b FROM BookFlight b WHERE b.flight.source.code = ?1 and b.flight.destination.code = ?2 and b.dateOfTravelling = ?3", nativeQuery = false)
-	public Collection<BookFlight> getBookedFlights(String source, String destination, LocalDate date);
+	public Collection<BookFlight> getBooking(String source, String destination, LocalDate date);
+
+	// Get booking between two cities on given date
+	@Query(value = "SELECT b FROM BookFlight b WHERE b.flight.source.code = ?1 and b.flight.destination.code = ?2", nativeQuery = false)
+	public Collection<BookFlight> getBooking(String source, String destination);
 
 }

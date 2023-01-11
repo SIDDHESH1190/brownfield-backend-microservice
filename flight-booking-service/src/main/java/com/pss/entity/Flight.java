@@ -2,11 +2,12 @@ package com.pss.entity;
 
 import java.time.LocalTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
@@ -15,6 +16,7 @@ public class Flight {
 
 	@Id
 	@NotNull(message = "Flight ID is required")
+	@GeneratedValue
 	private Long flightId;
 
 	@OneToOne
@@ -28,33 +30,33 @@ public class Flight {
 	@NotNull(message = "Flight distance is required")
 	private Double distance;
 
-	@Transient
-	private String timeOfDeparture;
-
-	@Transient
-	private String timeOfArrival;
-
 	@NotNull(message = "Flight departure time is required")
 	private LocalTime departureTime;
 
 	@NotNull(message = "Flight arrival time is required")
 	private LocalTime arrivalTime;
 
+	@Column(name = "flight_status")
+	private Boolean FlightStatus;
+
 	public Flight() {
 		super();
 	}
 
-	public Flight(Long flightId, Airport source, Airport destination, Double distance, String timeOfDeparture,
-			String timeOfArrival, LocalTime departureTime, LocalTime arrivalTime) {
+	public Flight(@NotNull(message = "Flight ID is required") Long flightId,
+			@NotNull(message = "Flight source airport is required") Airport source,
+			@NotNull(message = "Flight destination airport is required") Airport destination,
+			@NotNull(message = "Flight distance is required") Double distance,
+			@NotNull(message = "Flight departure time is required") LocalTime departureTime,
+			@NotNull(message = "Flight arrival time is required") LocalTime arrivalTime, Boolean flightStatus) {
 		super();
 		this.flightId = flightId;
 		this.source = source;
 		this.destination = destination;
 		this.distance = distance;
-		this.timeOfDeparture = timeOfDeparture;
-		this.timeOfArrival = timeOfArrival;
 		this.departureTime = departureTime;
 		this.arrivalTime = arrivalTime;
+		FlightStatus = flightStatus;
 	}
 
 	public Long getFlightId() {
@@ -71,14 +73,6 @@ public class Flight {
 
 	public Double getDistance() {
 		return distance;
-	}
-
-	public String getTimeOfDeparture() {
-		return timeOfDeparture;
-	}
-
-	public String getTimeOfArrival() {
-		return timeOfArrival;
 	}
 
 	public LocalTime getDepartureTime() {
@@ -105,14 +99,6 @@ public class Flight {
 		this.distance = distance;
 	}
 
-	public void setTimeOfDeparture(String timeOfDeparture) {
-		this.timeOfDeparture = timeOfDeparture;
-	}
-
-	public void setTimeOfArrival(String timeOfArrival) {
-		this.timeOfArrival = timeOfArrival;
-	}
-
 	public void setDepartureTime(LocalTime departureTime) {
 		this.departureTime = departureTime;
 	}
@@ -121,11 +107,19 @@ public class Flight {
 		this.arrivalTime = arrivalTime;
 	}
 
+	public Boolean getFlightStatus() {
+		return FlightStatus;
+	}
+
+	public void setFlightStatus(Boolean flightStatus) {
+		FlightStatus = flightStatus;
+	}
+
 	@Override
 	public String toString() {
 		return "Flight [flightId=" + flightId + ", source=" + source + ", destination=" + destination + ", distance="
-				+ distance + ", timeOfDeparture=" + timeOfDeparture + ", timeOfArrival=" + timeOfArrival
-				+ ", departureTime=" + departureTime + ", arrivalTime=" + arrivalTime + "]";
+				+ distance + ", departureTime=" + departureTime + ", arrivalTime=" + arrivalTime + ", FlightStatus="
+				+ FlightStatus + "]";
 	}
 
 }
