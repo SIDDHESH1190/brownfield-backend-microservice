@@ -66,8 +66,6 @@ public class Flight {
 		return distance;
 	}
 
-	
-
 	public LocalTime getDepartureTime() {
 		return departureTime;
 	}
@@ -92,8 +90,6 @@ public class Flight {
 		this.distance = distance;
 	}
 
-	
-
 	public void setDepartureTime(LocalTime departureTime) {
 		this.departureTime = departureTime;
 	}
@@ -107,7 +103,5 @@ public class Flight {
 		return "Flight [flightId=" + flightId + ", source=" + source + ", destination=" + destination + ", distance="
 				+ distance + ", departureTime=" + departureTime + ", arrivalTime=" + arrivalTime + "]";
 	}
-
-	
 
 }

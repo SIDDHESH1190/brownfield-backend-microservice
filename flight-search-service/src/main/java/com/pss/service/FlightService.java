@@ -57,7 +57,7 @@ public class FlightService {
 	// Admin Service
 	// Add Flight
 	public Flight addFlight(AddFlightRequest newFlightRequest) {
-
+		System.out.println("Add flight");
 		Flight newFlight = new Flight();
 
 		newFlight.setFlightId(0L);
@@ -92,6 +92,7 @@ public class FlightService {
 	// Admin Service
 	// Get all flight data
 	public List<Flight> getAllFlight() {
+		System.out.println("All Flights");
 		return flightRepo.findAll();
 	}
 
@@ -108,22 +109,30 @@ public class FlightService {
 
 	// Admin Service
 	// Edit Flight
-	public Flight editFlight(Flight updatedFlight) {
-		if (!flightRepo.existsById(updatedFlight.getFlightId())) {
-			throw new RuntimeException("Flight with flight Id : " + updatedFlight.getFlightId() + " is not found.");
+	public Flight editFlight(Long flightId, AddFlightRequest updatedFlight) {
+		if (!flightRepo.existsById(flightId)) {
+			throw new RuntimeException("Flight with flight Id : " + flightId + " is not found.");
 		}
 
+		Flight flightToUpdate = flightRepo.findById(flightId).get();
+
+		flightToUpdate.setSource(airportService.getAirportByCode(updatedFlight.getSourceCode()).get());
+
+		flightToUpdate.setDestination(airportService.getAirportByCode(updatedFlight.getDestinationCode()).get());
+
 		// Calculate distance between two airports
-		updatedFlight.setDistance(distance(updatedFlight.getSource().getLat(), updatedFlight.getDestination().getLat(),
-				updatedFlight.getSource().getLon(), updatedFlight.getDestination().getLon()));
+		flightToUpdate
+				.setDistance(distance(flightToUpdate.getSource().getLat(), flightToUpdate.getDestination().getLat(),
+						flightToUpdate.getSource().getLon(), flightToUpdate.getDestination().getLon()));
 
 		// Set DepartureTime
-//		updatedFlight.setDepartureTime(LocalTime.parse(updatedFlight.getTimeOfDeparture(), DateTimeFormatter.ISO_TIME));
+		flightToUpdate
+				.setDepartureTime(LocalTime.parse(updatedFlight.getTimeOfDeparture(), DateTimeFormatter.ISO_TIME));
 
 		// Set ArrivalTime
-//		updatedFlight.setArrivalTime(LocalTime.parse(updatedFlight.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
+		flightToUpdate.setArrivalTime(LocalTime.parse(updatedFlight.getTimeOfArrival(), DateTimeFormatter.ISO_TIME));
 
-		return flightRepo.saveAndFlush(updatedFlight);
+		return flightRepo.saveAndFlush(flightToUpdate);
 
 	}
 
@@ -132,6 +141,7 @@ public class FlightService {
 		if (flights == null) {
 			flights = flightRepo.findAll();
 		}
+		System.out.println(flights);
 		return flights.stream().filter(flight -> flight.getDepartureTime().isBefore(LocalTime.NOON)).toList();
 
 	}
@@ -191,19 +201,22 @@ public class FlightService {
 
 	// Admin Search
 	public List<Flight> adminSearch(AdminSearchRequest req) {
+
+		System.out.println("Request = " + req);
 		if (req.getFlightId() != null) {
 			List<Flight> flights = new ArrayList<Flight>();
 			flights.add(getFlightById(req.getFlightId()).get());
 			return flights;
 		}
 
-		if (req.getSource() != "" && req.getDestination() != "") {
+		if (req.getSource() != null && req.getDestination() != null && !req.getSource().equals("")
+				&& !req.getDestination().equals("")) {
 			List<Flight> flights = getFlightBySourceAndDestination(req.getSource(), req.getDestination());
-			if (req.getTime() != "") {
+			if (req.getTime() != null && !req.getTime().equals("")) {
 
-				if (req.getTime() == "Morning") {
+				if (req.getTime().equals("Morning")) {
 					return getMorningFlights(flights);
-				} else if (req.getTime() == "Afternoon") {
+				} else if (req.getTime().equals("Afternoon")) {
 					return getAfternoonFlights(flights);
 				} else {
 					return getNightFlights(flights);
@@ -213,16 +226,19 @@ public class FlightService {
 			}
 		}
 
-		if (req.getTime() == "Morning") {
-			return getMorningFlights(null);
-		}
+		if (req.getTime() != null) {
 
-		if (req.getTime() == "Afternoon") {
-			return getAfternoonFlights(null);
-		}
+			if (req.getTime().equals("Morning")) {
+				return getMorningFlights(null);
+			}
 
-		if (req.getTime() == "Night")
-			return getNightFlights(null);
+			if (req.getTime().equals("Afternoon")) {
+				return getAfternoonFlights(null);
+			}
+
+			if (req.getTime().equals("Night"))
+				return getNightFlights(null);
+		}
 
 		return getAllFlight();
 	}
