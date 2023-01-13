@@ -20,10 +20,11 @@ public class Passenger {
 	@NotNull(message = "Passenger's last name is required.")
 	private String lastName;
 
+//	@Enumerated(EnumType.STRING)
 	private Gender gender;
 
 	@Min(value = 1, message = "Seat no. 1 is the first seat")
-	@Max(value = 100, message = "Seat no. 100 is the last seat")
+	@Max(value = 100, message = "Seat no. 120 is the last seat")
 	private Integer seatNo;
 
 	public Passenger() {

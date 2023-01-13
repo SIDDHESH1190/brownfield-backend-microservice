@@ -1,6 +1,7 @@
 package com.pss.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public class FlightService {
 	// Admin Service
 	// Get all flight data
 	public List<Flight> getAllFlight() {
-		System.out.println("All Flights");
+		System.out.println(LocalDateTime.now() +"All Flights");
 		return flightRepo.findAll();
 	}
 
@@ -187,14 +188,14 @@ public class FlightService {
 		return flightRepo.findBySourceAndDestination(source, destination).stream().filter((flight) -> {
 
 			Integer passengerCount = restTemplate
-					.getForEntity("http://booking-service/getPassengerCount/" + flight.getFlightId() + "/" + date,
+					.getForEntity("http://booking-service/booking/getPassengerCount/" + flight.getFlightId() + "/" + date,
 							Integer.class)
 					.getBody();
 
 			if (passengerCount == null) {
 				passengerCount = 0;
 			}
-			return (passengerCount + noOfPassenger <= 100) && flight.getFlightStatus();
+			return (passengerCount + noOfPassenger <= 120) && flight.getFlightStatus();
 
 		}).map((flight) -> {
 

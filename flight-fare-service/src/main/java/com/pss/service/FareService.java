@@ -19,7 +19,7 @@ public class FareService {
 	public Integer getFare(Long flightId, LocalDate date) {
 		Integer fare = 4000;
 
-		Flight flight = restTemplate.getForObject("http://search-service/getFlight/" + flightId, Flight.class);
+		Flight flight = restTemplate.getForObject("http://search-service/search/getFlight/" + flightId, Flight.class);
 
 		if (flight != null) {
 			fare = (int) Math.max(fare, flight.getDistance() * 50);
@@ -37,7 +37,7 @@ public class FareService {
 		}
 
 		Integer passengerCount = restTemplate
-				.getForEntity("http://booking-service/getPassengerCount/" + flightId + "/" + date, Integer.class)
+				.getForEntity("http://booking-service/booking/getPassengerCount/" + flightId + "/" + date, Integer.class)
 				.getBody();
 
 		if (passengerCount != null) {

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pss.entity.AddFlightRequest;
@@ -25,6 +26,7 @@ import jakarta.validation.Valid;
 @RestController
 @Validated
 @CrossOrigin(origins = "*")
+@RequestMapping("/search")
 public class FlightController {
 
 	@Autowired
@@ -104,7 +106,7 @@ public class FlightController {
 	}
 
 	// Admin can change status of flight
-	@GetMapping("changeFlightStatus/{flightId}")
+	@PostMapping("changeFlightStatus/{flightId}")
 	public String changeFlightStatus(@PathVariable("flightId") Long flightId) {
 		return flightService.changeFlightStatus(flightId);
 	}

@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pss.entity.AdminBookingSearchRequest;
 import com.pss.entity.BookFlight;
+import com.pss.entity.NewBookingRequest;
 import com.pss.service.BookFlightService;
 
 import jakarta.validation.Valid;
@@ -24,6 +26,7 @@ import jakarta.validation.Valid;
 @RestController
 @Validated
 @CrossOrigin(origins = "*")
+@RequestMapping("/booking")
 public class FlightBookingController {
 
 	@Autowired
@@ -31,8 +34,8 @@ public class FlightBookingController {
 
 	// To create a new booking
 	@PostMapping("/bookFlight")
-	public BookFlight newFlightBooking(@RequestBody @Valid BookFlight newBooking) {
-		return bookFlightService.bookFlight(newBooking);
+	public BookFlight newFlightBooking(@RequestBody @Valid NewBookingRequest newBookingReq) {
+		return bookFlightService.bookFlight(newBookingReq);
 	}
 
 	// To get booking by booking id

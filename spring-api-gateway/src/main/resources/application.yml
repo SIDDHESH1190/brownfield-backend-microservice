@@ -1,0 +1,49 @@
+server:
+  port: 8089     
+
+
+spring:
+  application:
+    name: api-gateway
+  
+  
+  
+  cloud:
+    gateway:
+      
+      default-filters:
+      - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      
+      routes:
+        - id: SEARCH-SERVICE
+          uri: http://localhost:8081/
+          predicates:
+            - Path=/search/**
+        
+        - id: BOOKING-SERVICE
+          uri: http://localhost:8082/
+          predicates:
+            - Path=/booking/**
+            
+        - id: FARE-SERVICE
+          uri: http://localhost:8083/
+          predicates:
+            - Path=/fare/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+       
+
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
